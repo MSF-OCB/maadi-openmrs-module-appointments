@@ -20,6 +20,7 @@ import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.text.ParseException;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
@@ -33,6 +34,8 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
     private String adminUserPassword;
     private String manageUser;
     private String manageUserPassword;
+    private String manageSelfUser;
+    private String manageSelfUserPassword;
     private String readOnlyUser;
     private String readOnlyUserPassword;
     private String noPrivilegeUser;
@@ -50,6 +53,8 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
         adminUserPassword = "P@ssw0rd";
         manageUser = "manage-user";
         manageUserPassword = "P@ssw0rd";
+        manageSelfUser = "manage-self-user";
+        manageSelfUserPassword = "test";
         readOnlyUser = "read-only-user";
         readOnlyUserPassword = "P@ssw0rd";
         noPrivilegeUser = "no-privilege-user";
@@ -60,6 +65,18 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
     @Test
     public void shouldSaveAppointmentsOnlyIfUserHasManagePrivilege() throws Exception {
         Context.authenticate(manageUser, manageUserPassword);
+        Appointment appointment = getSampleAppointment();
+        assertNotNull(appointmentsService.validateAndSave(appointment));
+    }
+
+    @Test
+    public void shouldSaveAppointmentsOnlyIfUserHasManageSelfPrivilege() throws Exception {
+        Context.authenticate(manageSelfUser, manageSelfUserPassword);
+        Appointment appointment = getSampleAppointment();
+        assertNotNull(appointmentsService.validateAndSave(appointment));
+    }
+
+    private Appointment getSampleAppointment() throws ParseException {
         Appointment appointment = new Appointment();
         appointment.setPatient(new Patient());
         appointment.setService(new AppointmentService());
@@ -68,7 +85,7 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
         appointment.setStartDateTime(startDateTime);
         appointment.setEndDateTime(endDateTime);
         appointment.setAppointmentKind(AppointmentKind.Scheduled);
-        assertNotNull(appointmentsService.validateAndSave(appointment));
+        return appointment;
     }
 
     @Test(expected = APIAuthenticationException.class)
@@ -173,6 +190,12 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
         appointmentsService.changeStatus(new Appointment(), "Completed", null);
     }
 
+    @Test
+    public void shouldBeAbleToChangeStatusIfUserHasManageSelfPrivilege() {
+        Context.authenticate(manageSelfUser, manageSelfUserPassword);
+        appointmentsService.changeStatus(new Appointment(), "Completed", null);
+    }
+
     @Test(expected = APIAuthenticationException.class)
     public void shouldNotBeAbleToChangeStatusIfUserHasReadOnlyPrivilege() throws Exception {
         Context.authenticate(readOnlyUser, readOnlyUserPassword);
@@ -194,6 +217,14 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
     @Test(expected = APIException.class)
     public void shouldBeAbleToUndoStatusChangeIfUserHasManagePrivilege() throws Exception {
         Context.authenticate(manageUser, manageUserPassword);
+        Appointment appointment = new Appointment();
+        appointment.setId(1);
+        appointmentsService.undoStatusChange(appointment);
+    }
+
+    @Test(expected = APIException.class)
+    public void shouldBeAbleToUndoStatusChangeIfUserHasManageSelfPrivilege() {
+        Context.authenticate(manageSelfUser, manageSelfUserPassword);
         Appointment appointment = new Appointment();
         appointment.setId(1);
         appointmentsService.undoStatusChange(appointment);
