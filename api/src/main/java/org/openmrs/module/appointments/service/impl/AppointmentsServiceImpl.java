@@ -3,15 +3,19 @@ package org.openmrs.module.appointments.service.impl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.appointments.dao.AppointmentAuditDao;
 import org.openmrs.module.appointments.dao.AppointmentDao;
-import org.openmrs.module.appointments.model.*;
+import org.openmrs.module.appointments.model.Appointment;
+import org.openmrs.module.appointments.model.AppointmentAudit;
+import org.openmrs.module.appointments.model.AppointmentService;
+import org.openmrs.module.appointments.model.AppointmentServiceType;
+import org.openmrs.module.appointments.model.AppointmentStatus;
 import org.openmrs.module.appointments.service.AppointmentsService;
 import org.openmrs.module.appointments.validator.AppointmentStatusChangeValidator;
 import org.openmrs.module.appointments.validator.AppointmentValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -24,6 +28,8 @@ import java.util.stream.Collectors;
 
 @Transactional
 public class AppointmentsServiceImpl implements AppointmentsService {
+
+    private static final String MANAGE_APPOINTMENTS_PRIVILEGE = "Manage Appointments";
 
     AppointmentDao appointmentDao;
 
@@ -49,8 +55,23 @@ public class AppointmentsServiceImpl implements AppointmentsService {
         this.appointmentAuditDao = appointmentAuditDao;
     }
 
+    private boolean validateUserAccess(Appointment appointment) {
+        if (Context.hasPrivilege(MANAGE_APPOINTMENTS_PRIVILEGE)) {
+            return true;
+        }
+        if (appointment.getProvider() != null && appointment.getProvider().getPerson() != null &&
+                !appointment.getProvider().getPerson().equals(Context.getAuthenticatedUser().getPerson())) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public Appointment validateAndSave(Appointment appointment) throws APIException {
+        if (!validateUserAccess(appointment)) {
+            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
+                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+        }
         if(!CollectionUtils.isEmpty(appointmentValidators)){
             List<String> errors = new ArrayList<>();
             for(AppointmentValidator validator: appointmentValidators){
@@ -129,6 +150,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 
     @Override
     public void changeStatus(Appointment appointment, String status, Date onDate) throws APIException{
+        if (!validateUserAccess(appointment)) {
+            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
+                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+        }
         List<String> errors = new ArrayList<>();
         AppointmentStatus appointmentStatus = AppointmentStatus.valueOf(status);
         validateStatusChange(appointment, appointmentStatus, errors);
@@ -152,6 +177,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 
     @Override
     public void undoStatusChange(Appointment appointment) throws APIException{
+        if (!validateUserAccess(appointment)) {
+            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
+                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+        }
         AppointmentAudit statusChangeEvent = appointmentAuditDao.getPriorStatusChangeEvent(appointment);
         if(statusChangeEvent != null) {
 	        appointment.setStatus(statusChangeEvent.getStatus());
