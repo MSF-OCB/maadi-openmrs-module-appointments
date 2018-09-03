@@ -92,7 +92,7 @@ public class AppointmentsServiceImplTest {
     @InjectMocks
     private AppointmentsServiceImpl appointmentsService;
 
-    private String exceptionCode = "error.privilegesRequired";;
+    private String exceptionCode = "error.privilegesRequired";
 
     @Before
     public void init() throws NoSuchFieldException, IllegalAccessException {
@@ -145,22 +145,22 @@ public class AppointmentsServiceImplTest {
         ArgumentCaptor<AppointmentAudit> captor = ArgumentCaptor.forClass(AppointmentAudit.class);
         verify(appointmentAuditDao, times(1)).save(captor.capture());
         List<AppointmentAudit> auditEvents = captor.getAllValues();
-        assertEquals(appointment.getStatus(),auditEvents.get(0).getStatus());
-        assertEquals(appointment,auditEvents.get(0).getAppointment());
-        String notes = "{\"serviceTypeUuid\":\""+ serviceType.getUuid() +"\",\"startDateTime\":\""+ startDateTime.toInstant().toString()
-                +"\",\"locationUuid\":null,\"appointmentKind\":\"Scheduled\",\"providerUuid\":null,\"endDateTime\":\""+ endDateTime.toInstant().toString()
-                +"\",\"serviceUuid\":\""+ service.getUuid() +"\",\"appointmentNotes\":null}";
+        assertEquals(appointment.getStatus(), auditEvents.get(0).getStatus());
+        assertEquals(appointment, auditEvents.get(0).getAppointment());
+        String notes = "{\"serviceTypeUuid\":\"" + serviceType.getUuid() + "\",\"startDateTime\":\"" + startDateTime.toInstant().toString()
+                + "\",\"locationUuid\":null,\"appointmentKind\":\"Scheduled\",\"providerUuid\":null,\"endDateTime\":\"" + endDateTime.toInstant().toString()
+                + "\",\"serviceUuid\":\"" + service.getUuid() + "\",\"appointmentNotes\":null}";
         assertEquals(notes, auditEvents.get(0).getNotes());
     }
 
     @Test
-    public void testGetAllAppointments() throws Exception {
+    public void testGetAllAppointments() {
         appointmentsService.getAllAppointments(null);
         verify(appointmentDao, times(1)).getAllAppointments(null);
     }
 
     @Test
-    public void shouldNotGetAppointmentsWithVoidedService() throws Exception {
+    public void shouldNotGetAppointmentsWithVoidedService() {
         List<Appointment> appointments = new ArrayList<>();
         Appointment appointment1 = new Appointment();
         AppointmentService appointmentService1 = new AppointmentService();
@@ -175,9 +175,9 @@ public class AppointmentsServiceImplTest {
         verify(appointmentDao, times(1)).getAllAppointments(null);
         assertEquals(appointmentList.size(), 1);
     }
-    
+
     @Test
-    public void shouldNotGetAppointmentsWithVoidedServiceType() throws Exception {
+    public void shouldNotGetAppointmentsWithVoidedServiceType() {
         List<Appointment> appointments = new ArrayList<>();
         Appointment appointment1 = new Appointment();
         AppointmentService appointmentService1 = new AppointmentService();
@@ -195,9 +195,9 @@ public class AppointmentsServiceImplTest {
         verify(appointmentDao, times(1)).getAllAppointments(null);
         assertEquals(appointmentList.size(), 1);
     }
-    
+
     @Test
-    public void shouldGetAllFutureAppointmentsForTheGivenAppointmentService() throws Exception {
+    public void shouldGetAllFutureAppointmentsForTheGivenAppointmentService() {
         AppointmentService appointmentService = new AppointmentService();
         appointmentService.setUuid("uuid");
         when(appointmentDao.getAllFutureAppointmentsForService(appointmentService)).thenReturn(new ArrayList<>());
@@ -208,7 +208,7 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldGetAllFutureAppointmentsForTheGivenAppointmentServiceType() throws Exception {
+    public void shouldGetAllFutureAppointmentsForTheGivenAppointmentServiceType() {
         AppointmentServiceType appointmentServiceType = new AppointmentServiceType();
         appointmentServiceType.setUuid("typeUuid");
         when(appointmentDao.getAllFutureAppointmentsForServiceType(appointmentServiceType)).thenReturn(new ArrayList<>());
@@ -249,7 +249,7 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldRunDefaultAppointmentValidatorsOnSave(){
+    public void shouldRunDefaultAppointmentValidatorsOnSave() {
         Appointment appointment = new Appointment();
         appointment.setPatient(new Patient());
         appointment.setService(new AppointmentService());
@@ -261,7 +261,7 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfValidationFailsOnAppointmentSave(){
+    public void shouldThrowExceptionIfValidationFailsOnAppointmentSave() {
         String errorMessage = "Appointment cannot be created without Patient";
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
@@ -277,7 +277,7 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldRunDefaultValidatorOnStatusChange(){
+    public void shouldRunDefaultValidatorOnStatusChange() {
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.Scheduled);
         appointmentsService.changeStatus(appointment, "CheckedIn", null);
@@ -285,7 +285,7 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfValidationFailsOnStatusChange(){
+    public void shouldThrowExceptionIfValidationFailsOnStatusChange() {
         String errorMessage = "Appointment status cannot be changed from Completed to Missed";
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
@@ -303,15 +303,15 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldCreateAuditEventOnStatusChangeWithOutDate(){
+    public void shouldCreateAuditEventOnStatusChangeWithOutDate() {
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.Scheduled);
         appointmentsService.changeStatus(appointment, "CheckedIn", null);
         ArgumentCaptor<AppointmentAudit> captor = ArgumentCaptor.forClass(AppointmentAudit.class);
         verify(appointmentAuditDao, times(1)).save(captor.capture());
         List<AppointmentAudit> auditEvents = captor.getAllValues();
-        assertEquals(appointment.getStatus(),auditEvents.get(0).getStatus());
-        assertEquals(appointment,auditEvents.get(0).getAppointment());
+        assertEquals(appointment.getStatus(), auditEvents.get(0).getStatus());
+        assertEquals(appointment, auditEvents.get(0).getAppointment());
         assertEquals(null, auditEvents.get(0).getNotes());
     }
 
@@ -324,8 +324,8 @@ public class AppointmentsServiceImplTest {
         ArgumentCaptor<AppointmentAudit> captor = ArgumentCaptor.forClass(AppointmentAudit.class);
         verify(appointmentAuditDao, times(1)).save(captor.capture());
         List<AppointmentAudit> auditEvents = captor.getAllValues();
-        assertEquals(appointment.getStatus(),auditEvents.get(0).getStatus());
-        assertEquals(appointment,auditEvents.get(0).getAppointment());
+        assertEquals(appointment.getStatus(), auditEvents.get(0).getStatus());
+        assertEquals(appointment, auditEvents.get(0).getAppointment());
         assertEquals(onDate.toInstant().toString(), auditEvents.get(0).getNotes());
     }
 
@@ -363,7 +363,7 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldUndoStatusChange() throws ParseException {
+    public void shouldUndoStatusChange() {
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.Completed);
         AppointmentAudit appointmentAudit = new AppointmentAudit();
@@ -373,13 +373,14 @@ public class AppointmentsServiceImplTest {
         when(appointmentAuditDao.getPriorStatusChangeEvent(appointment)).thenReturn(appointmentAudit);
         appointmentsService.undoStatusChange(appointment);
         verify(appointmentAuditDao, times(1)).getPriorStatusChangeEvent(appointment);
-        ArgumentCaptor<Appointment> captor = ArgumentCaptor.forClass(Appointment.class);;
+        ArgumentCaptor<Appointment> captor = ArgumentCaptor.forClass(Appointment.class);
+        ;
         verify(appointmentDao, times(1)).save(captor.capture());
         assertEquals(appointmentAudit.getStatus(), captor.getValue().getStatus());
     }
 
     @Test
-    public void shouldCreateStatusChangeAuditEventOnUndoStatusChange() throws ParseException {
+    public void shouldCreateStatusChangeAuditEventOnUndoStatusChange() {
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.Completed);
         AppointmentAudit appointmentAudit = new AppointmentAudit();
@@ -388,7 +389,8 @@ public class AppointmentsServiceImplTest {
         appointmentAudit.setNotes("2108-08-15T11:30:00.0Z");
         when(appointmentAuditDao.getPriorStatusChangeEvent(appointment)).thenReturn(appointmentAudit);
         appointmentsService.undoStatusChange(appointment);
-        ArgumentCaptor<AppointmentAudit> captor = ArgumentCaptor.forClass(AppointmentAudit.class);;
+        ArgumentCaptor<AppointmentAudit> captor = ArgumentCaptor.forClass(AppointmentAudit.class);
+        ;
         verify(appointmentAuditDao, times(1)).save(captor.capture());
         AppointmentAudit savedEvent = captor.getValue();
         assertEquals(appointmentAudit.getNotes(), savedEvent.getNotes());
@@ -397,7 +399,7 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenThereIsNoPriorStatusChangeExists() throws ParseException {
+    public void shouldThrowExceptionWhenThereIsNoPriorStatusChangeExists() {
         Appointment appointment = new Appointment();
         appointment.setStatus(AppointmentStatus.Scheduled);
         when(appointmentAuditDao.getPriorStatusChangeEvent(appointment)).thenReturn(null);
@@ -421,7 +423,7 @@ public class AppointmentsServiceImplTest {
     public void shouldThrowExceptionOnAppointmentStatusChangeIfUserHasOnlySelfPrivilegeAndProviderAndUserIsNotTheSamePerson() {
         setupForSelfPrivilegeAccess(exceptionCode);
 
-        appointmentsService.changeStatus(appointment,null,null);
+        appointmentsService.changeStatus(appointment, null, null);
 
         verifyHelperForSelfPrivilegeTest();
     }
