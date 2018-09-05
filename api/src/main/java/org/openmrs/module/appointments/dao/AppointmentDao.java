@@ -2,6 +2,7 @@ package org.openmrs.module.appointments.dao;
 
 import java.util.Date;
 import org.openmrs.module.appointments.model.Appointment;
+import org.openmrs.module.appointments.model.AppointmentSearch;
 import org.openmrs.module.appointments.model.AppointmentService;
 import org.openmrs.module.appointments.model.AppointmentServiceType;
 import org.openmrs.module.appointments.model.AppointmentStatus;
@@ -26,4 +27,6 @@ public interface AppointmentDao {
 	Appointment getAppointmentByUuid(String uuid);
 
     List<Appointment> getAllAppointmentsInDateRange(Date startDate, Date endDate);
+
+    List<Appointment> search(AppointmentSearch appointmentSearch);
 }
