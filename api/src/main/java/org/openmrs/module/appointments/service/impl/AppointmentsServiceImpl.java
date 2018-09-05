@@ -10,6 +10,7 @@ import org.openmrs.module.appointments.dao.AppointmentAuditDao;
 import org.openmrs.module.appointments.dao.AppointmentDao;
 import org.openmrs.module.appointments.model.Appointment;
 import org.openmrs.module.appointments.model.AppointmentAudit;
+import org.openmrs.module.appointments.model.AppointmentSearch;
 import org.openmrs.module.appointments.model.AppointmentService;
 import org.openmrs.module.appointments.model.AppointmentServiceType;
 import org.openmrs.module.appointments.model.AppointmentStatus;
@@ -25,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
 
 @Transactional
 public class AppointmentsServiceImpl implements AppointmentsService {
@@ -188,6 +191,14 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 	        createEventInAppointmentAudit(appointment, statusChangeEvent.getNotes());
         } else
             throw new APIException("No status change actions to undo");
+    }
+
+    @Override
+    public List<Appointment> search(AppointmentSearch appointmentSearch) {
+        if(isNull(appointmentSearch.getStartDate()) || isNull(appointmentSearch.getEndDate())){
+            return null;
+        }
+        return appointmentDao.search(appointmentSearch);
     }
 
     private void createEventInAppointmentAudit(Appointment appointment,

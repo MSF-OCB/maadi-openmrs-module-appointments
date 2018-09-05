@@ -3,6 +3,7 @@ package org.openmrs.module.appointments.service;
 
 import org.openmrs.annotation.Authorized;
 import org.openmrs.module.appointments.model.Appointment;
+import org.openmrs.module.appointments.model.AppointmentSearch;
 import org.openmrs.module.appointments.model.AppointmentService;
 import org.openmrs.module.appointments.model.AppointmentServiceType;
 import org.openmrs.module.appointments.model.AppointmentStatus;
@@ -52,5 +53,9 @@ public interface AppointmentsService {
     @Transactional
     @Authorized({"Manage Appointments", "Manage Self Appointments"})
     void undoStatusChange(Appointment appointment);
+
+    @Transactional
+    @Authorized({"View Appointments"})
+    List<Appointment> search(AppointmentSearch appointmentSearch);
 }
 
