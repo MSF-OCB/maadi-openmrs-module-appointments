@@ -417,35 +417,35 @@ public class AppointmentsServiceImplTest {
     }
 
     @Test(expected = APIAuthenticationException.class)
-    public void shouldThrowExceptionOnAppointmentSaveIfUserHasOnlySelfPrivilegeAndProviderAndUserIsNotTheSamePerson() {
-        setupForSelfPrivilegeAccess(exceptionCode);
+    public void shouldThrowExceptionOnAppointmentSaveIfUserHasOnlyOwnPrivilegeAndProviderAndUserIsNotTheSamePerson() {
+        setupForOwnPrivilegeAccess(exceptionCode);
 
         appointmentsService.validateAndSave(appointment);
 
-        verifyHelperForSelfPrivilegeTest();
+        verifyHelperForOwnPrivilegeTest();
     }
 
     @Test(expected = APIAuthenticationException.class)
-    public void shouldThrowExceptionOnAppointmentStatusChangeIfUserHasOnlySelfPrivilegeAndProviderAndUserIsNotTheSamePerson() {
-        setupForSelfPrivilegeAccess(exceptionCode);
+    public void shouldThrowExceptionOnAppointmentStatusChangeIfUserHasOnlyOwnPrivilegeAndProviderAndUserIsNotTheSamePerson() {
+        setupForOwnPrivilegeAccess(exceptionCode);
 
         appointmentsService.changeStatus(appointment, null, null);
 
-        verifyHelperForSelfPrivilegeTest();
+        verifyHelperForOwnPrivilegeTest();
     }
 
     @Test(expected = APIAuthenticationException.class)
-    public void shouldThrowExceptionOnAppointmentUndoStatusChangeIfUserHasOnlySelfPrivilegeAndProviderAndUserIsNotTheSamePerson() {
-        setupForSelfPrivilegeAccess(exceptionCode);
+    public void shouldThrowExceptionOnAppointmentUndoStatusChangeIfUserHasOnlyOwnPrivilegeAndProviderAndUserIsNotTheSamePerson() {
+        setupForOwnPrivilegeAccess(exceptionCode);
 
         appointmentsService.undoStatusChange(appointment);
 
-        verifyHelperForSelfPrivilegeTest();
+        verifyHelperForOwnPrivilegeTest();
     }
 
-    private void setupForSelfPrivilegeAccess(String exceptionCode) {
+    private void setupForOwnPrivilegeAccess(String exceptionCode) {
         String exceptionMessage = "Exception message";
-        when(Context.hasPrivilege("Self Appointments")).thenReturn(true);
+        when(Context.hasPrivilege("manageOwnAppointments")).thenReturn(true);
         when(messageSourceService.getMessage(exceptionCode, null, null)).thenReturn(exceptionMessage);
         when(Context.getMessageSourceService()).thenReturn(messageSourceService);
         when(user.getPerson()).thenReturn(new Person());
@@ -454,7 +454,7 @@ public class AppointmentsServiceImplTest {
         when(appointment.getProvider()).thenReturn(provider);
     }
 
-    private void verifyHelperForSelfPrivilegeTest() {
+    private void verifyHelperForOwnPrivilegeTest() {
         verify(appointmentDao, never()).save(appointment);
         verifyStatic();
         Context.hasPrivilege("Manage Appointments");
