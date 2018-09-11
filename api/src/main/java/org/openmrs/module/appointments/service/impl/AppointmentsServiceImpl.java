@@ -33,7 +33,7 @@ import static java.util.Objects.isNull;
 public class AppointmentsServiceImpl implements AppointmentsService {
 
     private static final String MANAGE_APPOINTMENTS_PRIVILEGE = "Manage Appointments";
-    private static final String RESET_APPOINTMENT_STATUS = "Reset Appointment Status";
+    private static final String RESET_APPOINTMENT_STATUS_PRIVILEGE = "Reset Appointment Status";
     private static final String PRIVILEGES_EXCEPTION_CODE = "error.privilegesRequired";
 
     AppointmentDao appointmentDao;
@@ -74,31 +74,30 @@ public class AppointmentsServiceImpl implements AppointmentsService {
     @Override
     public Appointment validateAndSave(Appointment appointment) throws APIException {
         if (!validateUserAccess(appointment)) {
-            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
-                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage(PRIVILEGES_EXCEPTION_CODE,
+                    new Object[]{MANAGE_APPOINTMENTS_PRIVILEGE}, null));
         }
-        if(!CollectionUtils.isEmpty(appointmentValidators)){
+        if (!CollectionUtils.isEmpty(appointmentValidators)) {
             List<String> errors = new ArrayList<>();
-            for(AppointmentValidator validator: appointmentValidators){
+            for (AppointmentValidator validator : appointmentValidators) {
                 validator.validate(appointment, errors);
             }
-            if(!errors.isEmpty()) {
+            if (!errors.isEmpty()) {
                 String message = StringUtils.join(errors, "\n");
                 throw new APIException(message);
             }
         }
         appointmentDao.save(appointment);
-	    try {
-		    createEventInAppointmentAudit(appointment, getAppointmentAsJsonString(appointment));
-	    }
-	    catch (IOException e) {
-		    throw new APIException(e);
-	    }
-	    return appointment;
+        try {
+            createEventInAppointmentAudit(appointment, getAppointmentAsJsonString(appointment));
+        } catch (IOException e) {
+            throw new APIException(e);
+        }
+        return appointment;
     }
 
     private String getAppointmentAsJsonString(Appointment appointment) throws IOException {
-        Map appointmentJson = new HashMap<String,String>();
+        Map appointmentJson = new HashMap<String, String>();
         String serviceUuid = appointment.getService().getUuid();
         appointmentJson.put("serviceUuid", serviceUuid);
         String serviceTypeUuid = appointment.getServiceType() != null ? appointment.getServiceType().getUuid() : null;
@@ -120,10 +119,10 @@ public class AppointmentsServiceImpl implements AppointmentsService {
         List<Appointment> appointments = appointmentDao.getAllAppointments(forDate);
         return appointments.stream().filter(appointment -> !isServiceOrServiceTypeVoided(appointment)).collect(Collectors.toList());
     }
-    
-    private boolean isServiceOrServiceTypeVoided(Appointment appointment){
+
+    private boolean isServiceOrServiceTypeVoided(Appointment appointment) {
         return (appointment.getService() != null && appointment.getService().getVoided()) ||
-               (appointment.getServiceType() != null && appointment.getServiceType().getVoided());
+                (appointment.getServiceType() != null && appointment.getServiceType().getVoided());
     }
 
     @Override
@@ -155,15 +154,8 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 
     @Override
     public void changeStatus(Appointment appointment, String status, Date onDate) throws APIException {
-        if (!validateUserAccess(appointment)) {
-            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage(PRIVILEGES_EXCEPTION_CODE,
-                    new Object[]{MANAGE_APPOINTMENTS_PRIVILEGE}, null));
-        }
         AppointmentStatus appointmentStatus = AppointmentStatus.valueOf(status);
-        if (appointmentStatus == AppointmentStatus.Scheduled && !Context.hasPrivilege(RESET_APPOINTMENT_STATUS)) {
-            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage(PRIVILEGES_EXCEPTION_CODE,
-                    new Object[]{RESET_APPOINTMENT_STATUS}, null));
-        }
+        throwAuthenticationExceptionIfNoProperPrivileges(appointment, appointmentStatus);
         List<String> errors = new ArrayList<>();
         validateStatusChange(appointment, appointmentStatus, errors);
         if (errors.isEmpty()) {
@@ -177,6 +169,17 @@ public class AppointmentsServiceImpl implements AppointmentsService {
         }
     }
 
+    private void throwAuthenticationExceptionIfNoProperPrivileges(Appointment appointment, AppointmentStatus appointmentStatus) {
+        if (!validateUserAccess(appointment)) {
+            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage(PRIVILEGES_EXCEPTION_CODE,
+                    new Object[]{MANAGE_APPOINTMENTS_PRIVILEGE}, null));
+        }
+        if (appointmentStatus == AppointmentStatus.Scheduled && !Context.hasPrivilege(RESET_APPOINTMENT_STATUS_PRIVILEGE)) {
+            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage(PRIVILEGES_EXCEPTION_CODE,
+                    new Object[]{RESET_APPOINTMENT_STATUS_PRIVILEGE}, null));
+        }
+    }
+
     @Override
     public List<Appointment> getAllAppointmentsInDateRange(Date startDate, Date endDate) {
         List<Appointment> appointments = appointmentDao.getAllAppointmentsInDateRange(startDate, endDate);
@@ -184,30 +187,30 @@ public class AppointmentsServiceImpl implements AppointmentsService {
     }
 
     @Override
-    public void undoStatusChange(Appointment appointment) throws APIException{
+    public void undoStatusChange(Appointment appointment) throws APIException {
         if (!validateUserAccess(appointment)) {
-            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
-                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+            throw new APIAuthenticationException(Context.getMessageSourceService().getMessage(PRIVILEGES_EXCEPTION_CODE,
+                    new Object[]{MANAGE_APPOINTMENTS_PRIVILEGE}, null));
         }
         AppointmentAudit statusChangeEvent = appointmentAuditDao.getPriorStatusChangeEvent(appointment);
-        if(statusChangeEvent != null) {
-	        appointment.setStatus(statusChangeEvent.getStatus());
-	        appointmentDao.save(appointment);
-	        createEventInAppointmentAudit(appointment, statusChangeEvent.getNotes());
+        if (statusChangeEvent != null) {
+            appointment.setStatus(statusChangeEvent.getStatus());
+            appointmentDao.save(appointment);
+            createEventInAppointmentAudit(appointment, statusChangeEvent.getNotes());
         } else
             throw new APIException("No status change actions to undo");
     }
 
     @Override
     public List<Appointment> search(AppointmentSearch appointmentSearch) {
-        if(isNull(appointmentSearch.getStartDate()) || isNull(appointmentSearch.getEndDate())){
+        if (isNull(appointmentSearch.getStartDate()) || isNull(appointmentSearch.getEndDate())) {
             return null;
         }
         return appointmentDao.search(appointmentSearch);
     }
 
     private void createEventInAppointmentAudit(Appointment appointment,
-            String notes) {
+                                               String notes) {
         AppointmentAudit appointmentAuditEvent = new AppointmentAudit();
         appointmentAuditEvent.setAppointment(appointment);
         appointmentAuditEvent.setStatus(appointment.getStatus());
@@ -217,7 +220,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
 
 
     private void validateStatusChange(Appointment appointment, AppointmentStatus status, List<String> errors) {
-        if(!CollectionUtils.isEmpty(statusChangeValidators)) {
+        if (!CollectionUtils.isEmpty(statusChangeValidators)) {
             for (AppointmentStatusChangeValidator validator : statusChangeValidators) {
                 validator.validate(appointment, status, errors);
             }
