@@ -7,10 +7,7 @@ import org.openmrs.Patient;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.appointments.model.Appointment;
-import org.openmrs.module.appointments.model.AppointmentKind;
-import org.openmrs.module.appointments.model.AppointmentService;
-import org.openmrs.module.appointments.model.AppointmentServiceType;
+import org.openmrs.module.appointments.model.*;
 import org.openmrs.module.appointments.util.DateUtil;
 import org.openmrs.web.test.BaseModuleWebContextSensitiveTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +32,8 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
     private String readOnlyUserPassword;
     private String noPrivilegeUser;
     private String noPrivilegeUserPassword;
+    private String resetUser;
+    private String resetUserPassword;
 
     @Autowired
     AppointmentsService appointmentsService;
@@ -51,6 +50,8 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
         readOnlyUserPassword = "P@ssw0rd";
         noPrivilegeUser = "no-privilege-user";
         noPrivilegeUserPassword = "P@ssw0rd";
+        resetUser = "reset-user";
+        resetUserPassword = "P@ssw0rd";
         executeDataSet("userRolesandPrivileges.xml");
     }
 
@@ -228,5 +229,21 @@ public class AppointmentsServiceTest extends BaseModuleWebContextSensitiveTest {
         Appointment appointment = new Appointment();
         appointment.setId(1);
         appointmentsService.undoStatusChange(appointment);
+    }
+
+    @Test
+    public void shouldBeAbleToChangeStatusFromMissedToScheduledIfUserHaveResetAppointmentStatusPrivilege() {
+        Context.authenticate(resetUser, resetUserPassword);
+        Appointment appointment = new Appointment();
+        appointment.setStatus(AppointmentStatus.Missed);
+        appointmentsService.changeStatus(appointment, "Scheduled", null);
+    }
+
+    @Test(expected = APIAuthenticationException.class)
+    public void shouldNotBeAbleToChangeStatusFromMissedToScheduledIfUserDoNotHaveResetAppointmentStatusPrivilege() {
+        Context.authenticate(manageUser, manageUserPassword);
+        Appointment appointment = new Appointment();
+        appointment.setStatus(AppointmentStatus.Missed);
+        appointmentsService.changeStatus(appointment, "Scheduled", null);
     }
 }
