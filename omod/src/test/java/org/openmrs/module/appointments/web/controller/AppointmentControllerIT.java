@@ -149,7 +149,7 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
     public void should_changeAppointmentStatusWithDate() throws Exception {
         String onDate = "2108-08-22T10:30:00.0Z";
         String content = "{ \"toStatus\": \"CheckedIn\", \"onDate\":\"" + onDate + "\"}";
-        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/c36006e5-9fbb-4f20-866b-0ece245615a7/changeStatus", content));
+        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/c36006e5-9fbb-4f20-866b-0ece245615a7/status-change", content));
         assertNotNull(response);
         Appointment appointmentByUuid = appointmentsService.getAppointmentByUuid("c36006e5-9fbb-4f20-866b-0ece245615a7");
         assertEquals(200, response.getStatus());
@@ -165,7 +165,7 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
     @Test
     public void should_changeAppointmentStatusWithoutDate() throws Exception {
         String content = "{ \"toStatus\": \"CheckedIn\"}";
-        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/c36006e5-9fbb-4f20-866b-0ece245615a7/changeStatus", content));
+        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/c36006e5-9fbb-4f20-866b-0ece245615a7/status-change", content));
         assertNotNull(response);
         Appointment appointmentByUuid = appointmentsService.getAppointmentByUuid("c36006e5-9fbb-4f20-866b-0ece245615a7");
         assertEquals(200, response.getStatus());
@@ -183,7 +183,7 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
     @Test
     public void should_throwExceptionForInvalidStatusChange() throws Exception {
         String content = "{ \"toStatus\": \"Missed\"}";
-        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/75504r42-3ca8-11e3-bf2b-0800271c13555/changeStatus", content));
+        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/75504r42-3ca8-11e3-bf2b-0800271c13555/status-change", content));
         assertNotNull(response);
         assertEquals(400, response.getStatus());
     }
@@ -191,7 +191,7 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
     @Test
     public void should_throwExceptionForInvalidAppointment() throws Exception {
         String content = "{ \"toStatus\": \"Scheduled\"}";
-        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/c36006e5-9fbb-4f20-866b-0ece245615a8/changeStatus", content));
+        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/c36006e5-9fbb-4f20-866b-0ece245615a8/status-change", content));
         assertNotNull(response);
         assertEquals(400, response.getStatus());
     }
@@ -239,10 +239,10 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
         String appointmentUuid = appointmentDefaultResponse.getUuid();
 
         content = "{ \"toStatus\": \"CheckedIn\"}";
-        response = handle(newPostRequest("/rest/v1/appointment/" + appointmentUuid + "/changeStatus", content));
+        response = handle(newPostRequest("/rest/v1/appointment/" + appointmentUuid + "/status-change", content));
         assertEquals(200, response.getStatus());
         content = "{ \"toStatus\": \"Scheduled\"}";
-        response = handle(newPostRequest("/rest/v1/appointment/" + appointmentUuid + "/changeStatus", content));
+        response = handle(newPostRequest("/rest/v1/appointment/" + appointmentUuid + "/status-change", content));
         assertNotNull(response);
         assertEquals(200, response.getStatus());
         Appointment appointment = appointmentsService.getAppointmentByUuid(appointmentUuid);
@@ -254,7 +254,7 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
     public void shouldResetMissedAppointmentToScheduledStateWhenUserHasResetAppointmentStatusPrivilege() throws Exception {
         String appointmentUuid = "75504r42-3ca8-11e3-bf2b-0800271c13555";
         String content = "{ \"toStatus\": \"Scheduled\"}";
-        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/" + appointmentUuid + "/changeStatus", content));
+        MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment/" + appointmentUuid + "/status-change", content));
 
         assertEquals(200, response.getStatus());
         Appointment appointmentByUuid = appointmentsService.getAppointmentByUuid("c36006e5-9fbb-4f20-866b-0ece245615a7");
