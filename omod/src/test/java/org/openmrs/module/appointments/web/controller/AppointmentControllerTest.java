@@ -7,7 +7,9 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+
 import static org.mockito.Matchers.any;
+
 import org.openmrs.Patient;
 import org.openmrs.api.APIException;
 import org.openmrs.module.appointments.model.Appointment;
@@ -90,19 +92,19 @@ public class AppointmentControllerTest {
         assertEquals(1, appointmentDefaultResponses.size());
         assertEquals(appointment.getUuid(), appointmentDefaultResponses.get(0).getUuid());
     }
-    
+
     @Test
     public void shouldGetAllAppointments() throws Exception {
         Appointment appointment = new Appointment();
         List<Appointment> appointmentList = new ArrayList<>();
         appointmentList.add(appointment);
         when(appointmentsService.getAllAppointments(null)).thenReturn(appointmentList);
-        
+
         appointmentController.getAllAppointments(null);
         verify(appointmentsService, times(1)).getAllAppointments(null);
         verify(appointmentMapper, times(1)).constructResponse(appointmentList);
     }
-    
+
     @Test
     public void shouldGetAllAppointmentsForDate() throws Exception {
         Appointment appointment = new Appointment();
@@ -110,9 +112,9 @@ public class AppointmentControllerTest {
         appointmentList.add(appointment);
         String dateString = "2017-08-15T00:00:00.0Z";
         Date forDate = DateUtil.convertToLocalDateFromUTC(dateString);
-        
+
         when(appointmentsService.getAllAppointments(forDate)).thenReturn(appointmentList);
-        
+
         appointmentController.getAllAppointments(dateString);
         verify(appointmentsService, times(1)).getAllAppointments(forDate);
         verify(appointmentMapper, times(1)).constructResponse(appointmentList);
@@ -155,7 +157,7 @@ public class AppointmentControllerTest {
         assertEquals(1, allAppointmentsSummary.size());
         assertEquals("someUuid", allAppointmentsSummary.get(0).getAppointmentService().getUuid());
         assertEquals(1, allAppointmentsSummary.get(0).getAppointmentCountMap().size());
-        AppointmentCount appointmentCount = (AppointmentCount)allAppointmentsSummary.get(0).getAppointmentCountMap().get("2017-08-15");
+        AppointmentCount appointmentCount = (AppointmentCount) allAppointmentsSummary.get(0).getAppointmentCountMap().get("2017-08-15");
         assertEquals(1, appointmentCount.getAllAppointmentsCount(), 0);
         assertEquals(0, appointmentCount.getMissedAppointmentsCount(), 0);
         assertEquals(simpleDateFormat.parse(startDateString), appointmentCount.getAppointmentDate());
@@ -201,34 +203,12 @@ public class AppointmentControllerTest {
 
     @Test
     public void shouldReturnErrorResponseWhenAppointmentDoesNotExist() throws Exception {
-        Map<String,String> statusDetails = new HashMap();
+        Map<String, String> statusDetails = new HashMap();
         statusDetails.put("toStatus", "Completed");
         when(appointmentsService.getAppointmentByUuid(anyString())).thenReturn(null);
         appointmentController.transitionAppointment("appointmentUuid", statusDetails);
         Mockito.verify(appointmentsService, times(1)).getAppointmentByUuid("appointmentUuid");
-        Mockito.verify(appointmentsService, never()).changeStatus(any(),any(),any());
-    }
-
-    @Test
-    public void shouldUndoStatusOfAppointment() throws Exception {
-        Appointment appointment = new Appointment();
-        appointment.setUuid("appointmentUuid");
-        when(appointmentsService.getAppointmentByUuid(appointment.getUuid())).thenReturn(appointment);
-        ResponseEntity<Object> responseEntity = appointmentController.undoStatusChange(appointment.getUuid());
-        Mockito.verify(appointmentsService, times(1)).getAppointmentByUuid(appointment.getUuid());
-        Mockito.verify(appointmentsService, times(1)).undoStatusChange(appointment);
-        Mockito.verify(appointmentMapper, times(1)).constructResponse(appointment);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
-
-    @Test
-    public void shouldReturnErrorResponseWhenAppointmentDoesNotExistOnUndoStaus() throws Exception {
-        String appointmentUuid = "appointmentUuid";
-        when(appointmentsService.getAppointmentByUuid(appointmentUuid)).thenReturn(null);
-        ResponseEntity<Object> responseEntity = appointmentController.undoStatusChange(appointmentUuid);
-        Mockito.verify(appointmentsService, times(1)).getAppointmentByUuid(appointmentUuid);
-        Mockito.verify(appointmentsService, never()).undoStatusChange(any());
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Mockito.verify(appointmentsService, never()).changeStatus(any(), any(), any());
     }
 
     @Test
@@ -263,7 +243,7 @@ public class AppointmentControllerTest {
     }
 
     @Test
-    public void shouldSaveAnAppointment() throws Exception{
+    public void shouldSaveAnAppointment() throws Exception {
         AppointmentPayload appointmentPayload = new AppointmentPayload();
         appointmentPayload.setPatientUuid("somePatientUuid");
         appointmentPayload.setUuid("someUuid");
