@@ -14,7 +14,7 @@ import java.util.List;
 public interface AppointmentsService {
 
     @Transactional
-    @Authorized({"Manage Appointments", "Manage Self Appointments"})
+    @Authorized({"Manage Appointments", "Manage Own Appointments"})
     Appointment validateAndSave(Appointment appointment);
 
     @Transactional
@@ -42,7 +42,7 @@ public interface AppointmentsService {
     Appointment getAppointmentByUuid(String uuid);
 
     @Transactional
-    @Authorized({"Manage Appointments", "Manage Self Appointments"})
+    @Authorized({"Manage Appointments", "Manage Own Appointments"})
     void changeStatus(Appointment appointment, String status, Date onDate);
 
     @Transactional
@@ -50,7 +50,7 @@ public interface AppointmentsService {
     List<Appointment> getAllAppointmentsInDateRange(Date startDate, Date endDate);
 
     @Transactional
-    @Authorized({"Manage Appointments", "Manage Self Appointments"})
+    @Authorized({"Manage Appointments", "Manage Own Appointments"})
     void undoStatusChange(Appointment appointment);
 }
 
