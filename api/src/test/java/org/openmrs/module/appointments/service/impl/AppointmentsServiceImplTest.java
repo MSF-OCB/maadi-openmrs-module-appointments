@@ -53,7 +53,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Context.class)
@@ -419,17 +418,13 @@ public class AppointmentsServiceImplTest {
         setupForOwnPrivilegeAccess(exceptionCode);
 
         appointmentsService.validateAndSave(appointment);
-
-        verifyHelperForOwnPrivilegeTest();
     }
 
     @Test(expected = APIAuthenticationException.class)
     public void shouldThrowExceptionOnAppointmentStatusChangeIfUserHasOnlyOwnPrivilegeAndProviderAndUserIsNotTheSamePerson() {
         setupForOwnPrivilegeAccess(exceptionCode);
 
-        appointmentsService.changeStatus(appointment, "Scheduled", null);
-
-        verifyHelperForOwnPrivilegeTest();
+        appointmentsService.changeStatus(appointment, null, null);
     }
 
     @Test(expected = APIAuthenticationException.class)
@@ -437,8 +432,6 @@ public class AppointmentsServiceImplTest {
         setupForOwnPrivilegeAccess(exceptionCode);
 
         appointmentsService.undoStatusChange(appointment);
-
-        verifyHelperForOwnPrivilegeTest();
     }
 
     private void setupForOwnPrivilegeAccess(String exceptionCode) {
@@ -450,20 +443,6 @@ public class AppointmentsServiceImplTest {
         when(Context.getAuthenticatedUser()).thenReturn(user);
         when(provider.getPerson()).thenReturn(new Person());
         when(appointment.getProvider()).thenReturn(provider);
-    }
-
-    private void verifyHelperForOwnPrivilegeTest() {
-        verify(appointmentDao, never()).save(appointment);
-        verifyStatic();
-        Context.hasPrivilege("Manage Appointments");
-        verifyStatic();
-        Context.getMessageSourceService();
-        verifyStatic();
-        Context.getAuthenticatedUser();
-        messageSourceService.getMessage(exceptionCode, null, null);
-        verify(user).getPerson();
-        verify(provider).getPerson();
-        verify(appointment).getProvider();
     }
 
     @Test
