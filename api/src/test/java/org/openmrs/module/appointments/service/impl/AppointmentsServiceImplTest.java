@@ -50,7 +50,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Context.class)
@@ -415,8 +414,6 @@ public class AppointmentsServiceImplTest {
         setupForSelfPrivilegeAccess(exceptionCode);
 
         appointmentsService.validateAndSave(appointment);
-
-        verifyHelperForSelfPrivilegeTest();
     }
 
     @Test(expected = APIAuthenticationException.class)
@@ -424,8 +421,6 @@ public class AppointmentsServiceImplTest {
         setupForSelfPrivilegeAccess(exceptionCode);
 
         appointmentsService.changeStatus(appointment, null, null);
-
-        verifyHelperForSelfPrivilegeTest();
     }
 
     @Test(expected = APIAuthenticationException.class)
@@ -433,8 +428,6 @@ public class AppointmentsServiceImplTest {
         setupForSelfPrivilegeAccess(exceptionCode);
 
         appointmentsService.undoStatusChange(appointment);
-
-        verifyHelperForSelfPrivilegeTest();
     }
 
     private void setupForSelfPrivilegeAccess(String exceptionCode) {
@@ -446,20 +439,6 @@ public class AppointmentsServiceImplTest {
         when(Context.getAuthenticatedUser()).thenReturn(user);
         when(provider.getPerson()).thenReturn(new Person());
         when(appointment.getProvider()).thenReturn(provider);
-    }
-
-    private void verifyHelperForSelfPrivilegeTest() {
-        verify(appointmentDao, never()).save(appointment);
-        verifyStatic();
-        Context.hasPrivilege("Manage Appointments");
-        verifyStatic();
-        Context.getMessageSourceService();
-        verifyStatic();
-        Context.getAuthenticatedUser();
-        messageSourceService.getMessage(exceptionCode, null, null);
-        verify(user).getPerson();
-        verify(provider).getPerson();
-        verify(appointment).getProvider();
     }
 
 }
