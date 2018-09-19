@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.openmrs.module.appointments.constants.PrivilegeConstants.MANAGE_APPOINTMENTS;
+
 @Transactional
 public class AppointmentsServiceImpl implements AppointmentsService {
-
-    private static final String MANAGE_APPOINTMENTS_PRIVILEGE = "Manage Appointments";
 
     AppointmentDao appointmentDao;
 
@@ -56,7 +56,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
     }
 
     private boolean validateIfUserHasSelfOrAllAppointmentsAccess(Appointment appointment) {
-        return Context.hasPrivilege(MANAGE_APPOINTMENTS_PRIVILEGE) ||
+        return Context.hasPrivilege(MANAGE_APPOINTMENTS) ||
                 isAppointmentForNoProvider(appointment) ||
                 isCurrentUserSamePersonAsAppointmentProvider(appointment);
     }
@@ -74,7 +74,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
     public Appointment validateAndSave(Appointment appointment) throws APIException {
         if (!validateIfUserHasSelfOrAllAppointmentsAccess(appointment)) {
             throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
-                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+                    new Object[] { MANAGE_APPOINTMENTS }, null));
         }
         if(!CollectionUtils.isEmpty(appointmentValidators)){
             List<String> errors = new ArrayList<>();
@@ -156,7 +156,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
     public void changeStatus(Appointment appointment, String status, Date onDate) throws APIException{
         if (!validateIfUserHasSelfOrAllAppointmentsAccess(appointment)) {
             throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
-                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+                    new Object[] { MANAGE_APPOINTMENTS }, null));
         }
         List<String> errors = new ArrayList<>();
         AppointmentStatus appointmentStatus = AppointmentStatus.valueOf(status);
@@ -183,7 +183,7 @@ public class AppointmentsServiceImpl implements AppointmentsService {
     public void undoStatusChange(Appointment appointment) throws APIException{
         if (!validateIfUserHasSelfOrAllAppointmentsAccess(appointment)) {
             throw new APIAuthenticationException(Context.getMessageSourceService().getMessage("error.privilegesRequired",
-                    new Object[] { MANAGE_APPOINTMENTS_PRIVILEGE }, null));
+                    new Object[] { MANAGE_APPOINTMENTS }, null));
         }
         AppointmentAudit statusChangeEvent = appointmentAuditDao.getPriorStatusChangeEvent(appointment);
         if(statusChangeEvent != null) {
