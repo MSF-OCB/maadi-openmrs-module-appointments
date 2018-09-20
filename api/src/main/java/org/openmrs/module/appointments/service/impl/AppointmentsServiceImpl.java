@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import static org.openmrs.module.appointments.constants.PrivilegeConstants.MANAGE_APPOINTMENTS;
 
@@ -68,11 +69,11 @@ public class AppointmentsServiceImpl implements AppointmentsService {
     }
 
     private boolean isAppointmentForNoProvider(Appointment appointment) {
-        return appointment.getProvider() == null || appointment.getProvider().getPerson() == null;
+        return isNull(appointment.getProvider()) || isNull(appointment.getProvider().getPerson());
     }
 
     private boolean isCurrentUserSamePersonAsAppointmentProvider(Appointment appointment) {
-        return appointment.getProvider() != null && appointment.getProvider().getPerson() != null &&
+        return nonNull(appointment.getProvider()) && nonNull(appointment.getProvider().getPerson()) &&
                 appointment.getProvider().getPerson().equals(Context.getAuthenticatedUser().getPerson());
     }
 
