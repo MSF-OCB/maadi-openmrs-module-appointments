@@ -47,15 +47,14 @@ public class AppointmentController {
         List<Appointment> appointments = appointmentsService.getAllAppointments(DateUtil.convertToLocalDateFromUTC(forDate));
         return appointmentMapper.constructResponse(appointments);
     }
-
-    @RequestMapping(method = RequestMethod.POST, value = "search")
+    @RequestMapping( method = RequestMethod.POST, value = "search")
     @ResponseBody
-    public List<AppointmentDefaultResponse> searchAppointments(@Valid @RequestBody AppointmentQuery searchQuery) throws IOException {
+    public List<AppointmentDefaultResponse> searchAppointments( @Valid @RequestBody AppointmentQuery searchQuery) throws IOException {
         Appointment appointment = appointmentMapper.mapQueryToAppointment(searchQuery);
         if (searchQuery.getStatus() == null) {
             appointment.setStatus(null);
         }
-        List<Appointment> appointments = appointmentsService.search(appointment);
+        List<Appointment> appointments =  appointmentsService.search(appointment);
         return appointmentMapper.constructResponse(appointments);
     }
 
@@ -66,12 +65,12 @@ public class AppointmentController {
             Appointment appointment = appointmentMapper.getAppointmentFromPayload(appointmentPayload);
             appointmentsService.validateAndSave(appointment);
             return new ResponseEntity<>(appointmentMapper.constructResponse(appointment), HttpStatus.OK);
-        } catch (RuntimeException e) {
+        }catch (RuntimeException e) {
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "futureAppointmentsForServiceType")
+    @RequestMapping( method = RequestMethod.GET, value = "futureAppointmentsForServiceType")
     @ResponseBody
     public List<AppointmentDefaultResponse> getAllFututreAppointmentsForGivenServiceType(@RequestParam(value = "appointmentServiceTypeUuid", required = true) String serviceTypeUuid) {
         AppointmentServiceType appointmentServiceType = appointmentServiceService.getAppointmentServiceTypeByUuid(serviceTypeUuid);
@@ -90,7 +89,7 @@ public class AppointmentController {
         for (AppointmentService appointmentService : appointmentServices) {
             List<Appointment> appointmentsForService =
                     appointmentsService.getAppointmentsForService(
-                            appointmentService, startDate, endDate,
+                appointmentService, startDate, endDate,
                             Arrays.asList(
                                     AppointmentStatus.Completed,
                                     AppointmentStatus.Scheduled,
@@ -103,9 +102,9 @@ public class AppointmentController {
             Map<String, AppointmentCount> appointmentCountMap = new LinkedHashMap<>();
             for (Map.Entry<Date, List<Appointment>> appointmentDateMap : appointmentsGroupedByDate.entrySet()) {
                 List<Appointment> appointments = appointmentDateMap.getValue();
-                Long missedAppointmentsCount = appointments.stream().filter(s -> s.getStatus().equals(AppointmentStatus.Missed)).count();
+                Long missedAppointmentsCount = appointments.stream().filter(s-> s.getStatus().equals(AppointmentStatus.Missed)).count();
                 AppointmentCount appointmentCount = new AppointmentCount(
-                        appointments.size(), Math.toIntExact(missedAppointmentsCount), appointmentDateMap.getKey(), appointmentService.getUuid());
+                        appointments.size(),Math.toIntExact(missedAppointmentsCount), appointmentDateMap.getKey(), appointmentService.getUuid());
                 appointmentCountMap.put(simpleDateFormat.format(appointmentDateMap.getKey()), appointmentCount);
             }
 
@@ -115,28 +114,28 @@ public class AppointmentController {
         return appointmentsSummaryList;
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/{appointmentUuid}/status-change")
+    @RequestMapping(method = RequestMethod.POST, value="/{appointmentUuid}/changeStatus")
     @ResponseBody
-    public ResponseEntity<Object> transitionAppointment(@PathVariable("appointmentUuid") String appointmentUuid, @RequestBody Map<String, String> statusDetails) throws ParseException {
+    public ResponseEntity<Object> transitionAppointment(@PathVariable("appointmentUuid")String appointmentUuid, @RequestBody Map<String, String> statusDetails) throws ParseException {
         try {
             String toStatus = statusDetails.get("toStatus");
             Date onDate = DateUtil.convertToLocalDateFromUTC(statusDetails.get("onDate"));
             Appointment appointment = appointmentsService.getAppointmentByUuid(appointmentUuid);
-            if (appointment != null) {
+            if(appointment != null){
                 appointmentsService.changeStatus(appointment, toStatus, onDate);
                 return new ResponseEntity<>(appointmentMapper.constructResponse(appointment), HttpStatus.OK);
-            } else
+            }else
                 throw new RuntimeException("Appointment does not exist");
-        } catch (RuntimeException e) {
+        }catch (RuntimeException e) {
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    public AppointmentDefaultResponse getAppointmentByUuid(@RequestParam(value = "uuid") String uuid) {
+    public AppointmentDefaultResponse getAppointmentByUuid(@RequestParam(value = "uuid") String uuid)  {
         Appointment appointment = appointmentsService.getAppointmentByUuid(uuid);
-        if (appointment == null) {
+        if(appointment == null){
             throw new RuntimeException("Appointment does not exist");
         }
         return appointmentMapper.constructResponse(appointment);
