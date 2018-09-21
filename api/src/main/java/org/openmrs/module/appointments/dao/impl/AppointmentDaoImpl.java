@@ -134,7 +134,7 @@ public class AppointmentDaoImpl implements AppointmentDao {
     public List<Appointment> search(AppointmentSearch appointmentSearch) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Appointment.class);
         criteria.add(Restrictions.eq("voided", false));
-        Date maxEndDate = new Date(appointmentSearch.getEndDate().getTime() + TimeUnit.DAYS.toMillis(1));
+        Date maxEndDate = new Date(appointmentSearch.getEndDate().getTime());
         criteria.add(Restrictions.between("startDateTime", appointmentSearch.getStartDate(), maxEndDate));
         return criteria.list();
     }
