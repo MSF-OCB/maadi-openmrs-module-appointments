@@ -3,10 +3,14 @@ package org.openmrs.module.appointments.web.controller;
 import org.openmrs.module.appointments.model.Appointment;
 import org.openmrs.module.appointments.model.AppointmentSearch;
 import org.openmrs.module.appointments.service.AppointmentsService;
+import org.openmrs.module.appointments.util.DateUtil;
 import org.openmrs.module.appointments.web.contract.AppointmentDefaultResponse;
 import org.openmrs.module.appointments.web.mapper.AppointmentMapper;
 import org.openmrs.module.webservices.rest.web.RestConstants;
+import org.openmrs.module.webservices.rest.web.RestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Objects.isNull;
 
@@ -45,5 +52,22 @@ public class AppointmentsController {
             throw new RuntimeException("Either StartDate or EndDate not provided");
         }
         return appointmentMapper.constructResponse(appointments);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/{appointmentUuid}/status-change")
+    @ResponseBody
+    public ResponseEntity<Object> transitionAppointment(@PathVariable("appointmentUuid") String appointmentUuid, @RequestBody Map<String, String> statusDetails) throws ParseException {
+        try {
+            String toStatus = statusDetails.get("toStatus");
+            Date onDate = DateUtil.convertToLocalDateFromUTC(statusDetails.get("onDate"));
+            Appointment appointment = appointmentsService.getAppointmentByUuid(appointmentUuid);
+            if (appointment != null) {
+                appointmentsService.changeStatus(appointment, toStatus, onDate);
+                return new ResponseEntity<>(appointmentMapper.constructResponse(appointment), HttpStatus.OK);
+            } else
+                throw new RuntimeException("Appointment does not exist");
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
     }
 }
