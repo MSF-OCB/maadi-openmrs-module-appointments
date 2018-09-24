@@ -332,7 +332,7 @@
         <sqlFile path="patientUpcomingAppointments.sql"/>
     </changeSet>
 
-    <changeSet id="Create-Available-for-appointments-201712121212" author="Maharjun, Saikumar">
+    <changeSet id="Create-Available-for-appointments-201712121212-2" author="Maharjun, Saikumar">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT count(*) FROM provider_attribute_type where name="Available for appointments";
@@ -343,7 +343,7 @@
             INSERT INTO provider_attribute_type (name, description, datatype, min_occurs, creator, date_created,
             retired, uuid)
             VALUES ("Available for appointments","providers will be available for appointments",
-            "org.openmrs.customdatatype.datatype.BooleanDatatype", 0, 8, NOW(), 0, UUID());
+            "org.openmrs.customdatatype.datatype.BooleanDatatype", 0, 1, NOW(), 0, UUID());
         </sql>
     </changeSet>
 
@@ -371,9 +371,9 @@
         <comment>Adding global property to specify the URL pattern for published appointment service events</comment>
         <insert tableName="global_property">
             <column name="property" value="atomfeed.event.urlPatternForAppointmentService"/>
-            <column name="property_value" value="/openmrs/ws/rest/v1/appointmentService?uuid={uuid}"/>
+            <column name="property_value" value="/openmrs/ws/rest/v1/appointment-services/{uuid}"/>
             <column name="uuid" valueComputed="UUID()"/>
-            <column name="description" value="URL pattern to use for published appointment service events. Default is /openmrs/ws/rest/v1/appointmentService?uuid={uuid}. If you change default value, please add your custom implementation for the given URL"/>
+            <column name="description" value="URL pattern to use for published appointment service events. Default is /openmrs/ws/rest/v1/appointment-services/{uuid}. If you change default value, please add your custom implementation for the given URL"/>
         </insert>
     </changeSet>
 
