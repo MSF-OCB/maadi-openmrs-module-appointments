@@ -12,6 +12,7 @@ import org.openmrs.module.appointments.web.mapper.AppointmentMapper;
 import org.openmrs.module.appointments.web.mapper.AppointmentServiceMapper;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.RestUtil;
+import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/appointment")
-public class AppointmentController {
+public class AppointmentController extends BaseRestController {
 
     @Autowired
     private AppointmentsService appointmentsService;
@@ -61,13 +62,9 @@ public class AppointmentController {
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createAppointment(@Valid @RequestBody AppointmentPayload appointmentPayload) throws IOException {
-        try {
-            Appointment appointment = appointmentMapper.getAppointmentFromPayload(appointmentPayload);
-            appointmentsService.validateAndSave(appointment);
-            return new ResponseEntity<>(appointmentMapper.constructResponse(appointment), HttpStatus.OK);
-        }catch (RuntimeException e) {
-            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
+        Appointment appointment = appointmentMapper.getAppointmentFromPayload(appointmentPayload);
+        appointmentsService.validateAndSave(appointment);
+        return new ResponseEntity<>(appointmentMapper.constructResponse(appointment), HttpStatus.OK);
     }
 
     @RequestMapping( method = RequestMethod.GET, value = "futureAppointmentsForServiceType")

@@ -164,9 +164,13 @@ public class AppointmentControllerTest {
 
     @Test
     public void shouldThrowExceptionIfPatientUuidIsBlankWhileCreatingAppointment() throws Exception {
-        when(appointmentsService.validateAndSave(any(Appointment.class))).thenThrow(new APIException("Exception Msg"));
-        ResponseEntity<Object> responseEntity = appointmentController.createAppointment(new AppointmentPayload());
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        String exceptionMsg = "Exception Msg";
+        when(appointmentsService.validateAndSave(any(Appointment.class))).thenThrow(new APIException(exceptionMsg));
+
+        expectedException.expect(APIException.class);
+        expectedException.expectMessage(exceptionMsg);
+
+        appointmentController.createAppointment(new AppointmentPayload());
     }
 
     @Test

@@ -2,7 +2,10 @@ package org.openmrs.module.appointments.web.controller;
 
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.appointments.dao.AppointmentAuditDao;
 import org.openmrs.module.appointments.model.Appointment;
@@ -33,6 +36,9 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
 
     @Autowired
     AppointmentAuditDao appointmentAuditDao;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -118,8 +124,10 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
                 "\"endDateTime\": \"2017-07-20\",  " +
                 "\"appointmentKind\": \"WalkIn\"}";
 
+        expectedException.expect(APIException.class);
+        expectedException.expectMessage("ppointment cannot be created without Patient");
+
         MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment", content));
-        assertEquals(400, response.getStatus());
     }
 
     @Test
@@ -131,8 +139,10 @@ public class AppointmentControllerIT extends BaseIntegrationTest {
                 "\"endDateTime\": \"2017-07-20\",  " +
                 "\"appointmentKind\": \"WalkIn\"}";
 
+        expectedException.expect(APIException.class);
+        expectedException.expectMessage("Appointment cannot be created without Service");
+
         MockHttpServletResponse response = handle(newPostRequest("/rest/v1/appointment", content));
-        assertEquals(400, response.getStatus());
     }
 
     @Test
