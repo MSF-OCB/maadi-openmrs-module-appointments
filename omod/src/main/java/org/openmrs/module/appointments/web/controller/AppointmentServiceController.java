@@ -63,13 +63,9 @@ public class AppointmentServiceController extends BaseRestController {
         if(appointmentServicePayload.getName() == null)
             throw new RuntimeException("Appointment Service name should not be null");
         AppointmentService appointmentService = appointmentServiceMapper.getAppointmentServiceFromPayload(appointmentServicePayload);
-        try {
-            AppointmentService savedAppointmentService = appointmentServiceService.save(appointmentService);
-            AppointmentServiceFullResponse appointmentServiceFullResponse = appointmentServiceMapper.constructResponse(savedAppointmentService);
-            return new ResponseEntity<>(appointmentServiceFullResponse, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
-        }
+        AppointmentService savedAppointmentService = appointmentServiceService.save(appointmentService);
+        AppointmentServiceFullResponse appointmentServiceFullResponse = appointmentServiceMapper.constructResponse(savedAppointmentService);
+        return new ResponseEntity<>(appointmentServiceFullResponse, HttpStatus.OK);
     }
 
     @RequestMapping( method = RequestMethod.DELETE)
@@ -80,13 +76,9 @@ public class AppointmentServiceController extends BaseRestController {
             AppointmentServiceFullResponse appointmentServiceFullResponse = appointmentServiceMapper.constructResponse(appointmentService);
             return new ResponseEntity<>(appointmentServiceFullResponse, HttpStatus.OK);
         }
-        try {
-            AppointmentService appointmentService1 = appointmentServiceService.voidAppointmentService(appointmentService, voidReason);
-            AppointmentServiceFullResponse appointmentServiceFullResponse = appointmentServiceMapper.constructResponse(appointmentService1);
-            return new ResponseEntity<>(appointmentServiceFullResponse, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
-        }
+        AppointmentService appointmentService1 = appointmentServiceService.voidAppointmentService(appointmentService, voidReason);
+        AppointmentServiceFullResponse appointmentServiceFullResponse = appointmentServiceMapper.constructResponse(appointmentService1);
+        return new ResponseEntity<>(appointmentServiceFullResponse, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "load")

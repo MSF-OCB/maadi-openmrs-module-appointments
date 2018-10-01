@@ -82,13 +82,13 @@ public class AppointmentServiceControllerTest {
         appointmentServicePayload.setName("Cardio");
         AppointmentService mappedServicePayload = new AppointmentService();
         when(appointmentServiceMapper.getAppointmentServiceFromPayload(appointmentServicePayload)).thenReturn(mappedServicePayload);
-        when(appointmentServiceService.save(mappedServicePayload)).thenThrow(new RuntimeException("The service 'Cardio' is already present"));
+        String exceptionMessage = "The service 'Cardio' is already present";
+        when(appointmentServiceService.save(mappedServicePayload)).thenThrow(new RuntimeException(exceptionMessage));
 
-        ResponseEntity<Object> appointmentService = appointmentServiceController.createAppointmentService(appointmentServicePayload);
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectMessage(exceptionMessage);
 
-        assertNotNull(appointmentService);
-        assertEquals("400", appointmentService.getStatusCode().toString());
-        assertEquals("The service 'Cardio' is already present", ((RuntimeException)appointmentService.getBody()).getMessage());
+        appointmentServiceController.createAppointmentService(appointmentServicePayload);
     }
 
     @Test
@@ -175,13 +175,10 @@ public class AppointmentServiceControllerTest {
         String exceptionMessage = "Please cancel all future appointments for this service to proceed. After deleting this service, you will not be able to see any appointments for it";
         when(appointmentServiceService.voidAppointmentService(appointmentService, voidReason)).thenThrow(new RuntimeException(exceptionMessage));
 
-        ResponseEntity<Object> response = appointmentServiceController.voidAppointmentService(appointmentServiceUuid, voidReason);
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectMessage(exceptionMessage);
 
-        verify(appointmentServiceService, times(1)).getAppointmentServiceByUuid(appointmentServiceUuid);
-        verify(appointmentServiceService, times(1)).voidAppointmentService(appointmentService, voidReason);
-        verify(appointmentServiceMapper, times(0)).constructResponse(appointmentService);
-        assertNotNull(response);
-        assertEquals(exceptionMessage, ((RuntimeException)response.getBody()).getMessage());
+        appointmentServiceController.voidAppointmentService(appointmentServiceUuid, voidReason);
     }
 
     @Test

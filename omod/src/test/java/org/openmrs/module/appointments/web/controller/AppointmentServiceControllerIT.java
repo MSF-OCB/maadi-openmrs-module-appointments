@@ -225,14 +225,10 @@ public class AppointmentServiceControllerIT extends BaseIntegrationTest {
         Parameter uuid = new Parameter("uuid", "c36006d4-9fbb-4f20-866b-0ece245615a1");
         Parameter voidReason = new Parameter("void_reason", "webservice call");
 
-        MockHttpServletResponse response = handle(newDeleteRequest("/rest/v1/appointmentService", uuid, voidReason));
-        assertNotNull(response);
-        assertEquals(400, response.getStatus());
-        SimpleObject responseObject = SimpleObject.parseJson(response.getContentAsString());
-        assertNotNull(responseObject);
-        assertEquals(
-                "Please cancel all future appointments for this service to proceed. After deleting this service, you will not be able to see any appointments for it",
-                responseObject.get("message"));
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectMessage("Please cancel all future appointments for this service to proceed. After deleting this service, you will not be able to see any appointments for it");
+
+        handle(newDeleteRequest("/rest/v1/appointmentService", uuid, voidReason));
     }
 
     @Test
